@@ -13,6 +13,8 @@
   "dependencies": {
     "@clerk/nextjs": "^6.32.0",
     "@neondatabase/serverless": "^1.0.1",
+    "@radix-ui/react-slot": "^1.2.3",
+    "button": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.5",
