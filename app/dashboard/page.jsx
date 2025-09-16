@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 
 export default function page() {
-  const [videoList, setVideoList] = useState();
+  const [videoList, setVideoList] = useState([]);
   return (
     <div>
       <div className='flex justify-between items-center'>
@@ -16,11 +16,10 @@ export default function page() {
         <Button>Create New</Button>
         </Link>
       </div>
-      <EmptyState />
-      
 
-      {/* {videoList?.length === 0 && <div> */}
-      {/* </div> } */}
+      {videoList?.length == 0 && <div>
+      <EmptyState />   
+      </div> }
     </div>
   )
 }
