@@ -4,7 +4,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "components/ui/select";
+} from "../../../@/components/ui/select";
 
 const SelectDuration = ( { onUserSelect }) => {
   return (
@@ -12,7 +12,6 @@ const SelectDuration = ( { onUserSelect }) => {
       <h2 className="font-bold text-xl text-black">Duration</h2>
       <p className="text-gray-500"> Select the duration of your video</p>
       <Select onValueChange={(value) => {
-      setSelectedOption(value)
       value!='Custome Prompt' && onUserSelect('duration', value)
     }}>
         <SelectTrigger className="w-full mt-2 p- text-md">
