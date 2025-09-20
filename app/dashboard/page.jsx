@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { EmptyState } from './_components/EmptyState'
-import { Button } from '../../components/ui/button';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 
 export default function page() {

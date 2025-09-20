@@ -1,14 +1,7 @@
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../../../@/components/ui/alert-dialog";
+} from "../../../../@/components/ui/alert-dialog";
 import Image from "next/image";
 
 const CustomeLoading = ({ loading }) => {

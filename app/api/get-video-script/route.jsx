@@ -17,7 +17,7 @@ export async function POST(req) {
     
     console.log("AI RESPONSE: ", text);
 
-    return NextResponse.json({ result: text });
+    return NextResponse.json({ result: JSON.parse(text) });
   } catch (e) {
     return NextResponse.json({ "Error:": e });
   }
