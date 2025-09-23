@@ -11,7 +11,7 @@ const Header = () => {
         <h2 className='font-bold text-xl'>AI Short video</h2>
       </div>
       <div className='flex gap-3 items-center'>
-        <Button className="p-2" size={10} variant="secondary">Dashboard</Button>
+        <Button className="p-2 " size={10} variant="secondary">Dashboard</Button>
         <UserButton />
       </div>
     </div>

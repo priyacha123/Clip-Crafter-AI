@@ -6,7 +6,6 @@ export async function POST(req) {
   try {
     const { prompt } = await req.json();
 
-    // Call Clipdrop API
     const form = new FormData();
     form.append("prompt", prompt);
 
@@ -36,7 +35,6 @@ export async function POST(req) {
     const downloadUrl = await getDownloadURL(storageRef);
     console.log("Uploaded image URL:", downloadUrl);
 
-    // Return download URL
     return NextResponse.json({ result: downloadUrl });
   } catch (e) {
     console.error("API error:", e);
