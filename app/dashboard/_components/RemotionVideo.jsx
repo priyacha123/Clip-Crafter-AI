@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Audio, Img, Sequence, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Img, interpolate, Sequence, useCurrentFrame, useVideoConfig } from "remotion";
 
 const RemotionVideo = ({
   script,
@@ -24,11 +24,20 @@ const RemotionVideo = ({
 
   return (
     <AbsoluteFill className="bg-black">
-      {imageList?.map((item, index) => (
+      {imageList?.map((item, index) => 
+      { const startTime = (index * getDurationFrame()) / imageList?.length 
+        const duration = getDurationFrame()
+        const scale = (index) => interpolate(
+          frame,
+          [startTime, startTime + duration / 2, startTime + duration], //zoom in and zoom out
+          index%2 == 0 ? [1,1.8,1] : [1.8, 1, 1.8], //scale from 1 (original) to 1.8
+          {extrapolateLeft:'clamp',extrapolateRight:'clamp'}
+        )
+        return (
         <>
           <Sequence
             key={index}
-            from={(index * getDurationFrame()) / imageList?.length}
+            from={startTime}
             durationInFrames={getDurationFrame}
           >
             <AbsoluteFill
@@ -40,6 +49,7 @@ const RemotionVideo = ({
                   width: "100%",
                   height: "100%",
                   objectFit: "cover",
+                  transform:`scale ${scale(index)}`
                 }}
               />
               <AbsoluteFill style={{
@@ -58,7 +68,7 @@ const RemotionVideo = ({
             </AbsoluteFill>
           </Sequence>
         </>
-      ))}
+      )})}
 
       <Audio src={audioFileurl} />
     </AbsoluteFill>
