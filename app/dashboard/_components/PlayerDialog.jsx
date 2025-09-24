@@ -11,14 +11,17 @@ import { Player } from "@remotion/player";
 import RemotionVideo from './RemotionVideo';
 import { Button } from '@/components/ui/button';
 import { VideoData } from 'configs/schema';
+import { useRouter } from 'next/navigation';
 
 const PlayerDialog = ({ playVideo, videoId}) => {
     const [openDialog, setOpenDialog] = useState(false)
     const [videoData, setVideoData] = useState()
     const [durationInFrame, setDurationInFrame] = useState(100)
 
+    const router = useRouter()
+
     useEffect(() => {
-        setOpenDialog(playVideo)
+        setOpenDialog(!openDialog)
         videoId && GetVideoData()
     }, [playVideo])
 
@@ -50,7 +53,7 @@ const PlayerDialog = ({ playVideo, videoId}) => {
       }}
     />
     <div className='flex justify-center items-center gap-4'>
-        <Button >Cancel</Button>
+        <Button variant='ghost' onClick={() => {router.replace('/dashboard'); setOpenDialog(false)}} >Cancel</Button>
         <Button>Export</Button>
     </div>
       </DialogDescription>

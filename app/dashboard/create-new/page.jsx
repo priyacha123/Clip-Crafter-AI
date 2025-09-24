@@ -62,7 +62,7 @@ const CreateNew = () => {
       formData.topic +
       " along with AI Images prompt in " +
       formData.imageStyle +
-      " format for each scene(there should be atleast 5 scene) and give me the result in JSON format with ImagePrompt and ContextField as field. No Plain Text. Do not include a title, duration, or any other fields.Do not add explanations before or after the JSON. Return only the JSON array.Respond ONLY with valid JSON, no markdown, no code blocks, no extra commentary. ";
+      " format for each scene and give me the result in JSON format with ImagePrompt and ContextField as field. No Plain Text. Do not include a title, duration, or any other fields.Do not add explanations before or after the JSON. Return only the JSON array.Respond ONLY with valid JSON, no markdown, no code blocks, no extra commentary. ";
 
     console.log(prompt);
 
