@@ -10,6 +10,8 @@ import CustomeLoading from "./_components/CustomeLoading";
 import { v4 as uuidv4 } from "uuid";
 import { VideoData } from "configs/schema";
 import { useUser } from "@clerk/nextjs";
+import PlayerDialog from "../_components/PlayerDialog";
+import { VideoDataContext } from "app/_context/VideoDataContext";
 
 // const scriptdata = " In a room bathed in moonlight, a little boy named Leo snuggled deep into his covers, ready for a story. His father opened a book of magical tales. 'Tonight,' he whispered, 'we'll meet a brave little dragon.' Deep in an enchanted forest, a tiny dragon named Sparky hatched from a shimmering egg. But Sparky was all alone and couldn't find his family. He let out a tiny, whimpering puff of smoke. Leo listened, his heart aching for the little dragon. 'He needs help,' he thought. Just then, a tiny light flickered in the darkness. It was a brave firefly named Flicker! 'This way!' buzzed Flicker, leading Sparky through the Whispering Woods. Flicker led him to a crystal cave, where Sparky’s family was waiting with open wings! With Sparky safe, Dad closed the book. Leo smiled, feeling warm and ready for sleep. And as he drifted off, he dreamed of soaring through the night sky with his new dragon friend. The End. "
 
@@ -28,6 +30,10 @@ const CreateNew = () => {
   const [audioFileUrl, setAudioFileUrl] = useState();
   const [captions, setCaptions] = useState();
   const [imageList, setImageList] = useState();
+  const [playVideo, setPlayVideo] = useState(true)
+  const [videoId, setVideoId] = useState(1)
+
+
   const { videoData, setVideoData } = useContext(VideoDataContext);
   const { user } = useUser();
 
@@ -163,8 +169,10 @@ const CreateNew = () => {
           captions: videoData?.captions,
           imageList: videoData?.imageList,
           createdBy: User?.primaryEmailAddress.emailAddress,
-        })
-        .returning({ id: VideoData?.id });
+        }).returning({ id: VideoData?.id });
+
+        setVideoId(result[0].id);
+        setPlayVideo(true)
 
       console.log("SaveVideoData", result);
       setLoading(false);
@@ -219,6 +227,7 @@ const CreateNew = () => {
         </div>
       </div>
       <CustomeLoading loading={loading} />
+      <PlayerDialog playVideo={playVideo} videoId={videoId} />
     </>
   );
 };

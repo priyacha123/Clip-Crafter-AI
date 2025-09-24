@@ -6,8 +6,10 @@
 - Authentication: clerk
 - Database: Neon based Postgres database
 - Drizzle and ORM
-- Generate text-based: Gemini API
+- Generate text-based script: Gemini API
+- Generate audio from text : Google Cloud text-to-speech API
 - Generate caption from audio file: Assembly AI
+- Generate AI images from text prompt: Replicate API's and Radid API (text-to image API)
 - Generate video and extract video file: Remotion AI
 
 ### Generate AI Video Script
@@ -19,4 +21,4 @@
 - Generate AI Images from Image Prompt and save in Firebase Storage
 
 - Now, store all this data to **Database**
-- Then convert it into **Video**
+- Then convert it into **Video** using **Remotion AI**
