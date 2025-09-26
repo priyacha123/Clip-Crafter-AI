@@ -15,7 +15,7 @@ export async function POST(req) {
     const text = result.response.text();
 
     
-    console.log("AI RESPONSE: ", text);
+    console.log("AI Script RESPONSE: ", text);
 
     return NextResponse.json({ result: JSON.parse(text) });
   } catch (e) {

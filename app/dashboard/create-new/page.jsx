@@ -12,6 +12,7 @@ import { VideoData } from "configs/schema";
 import { useUser } from "@clerk/nextjs";
 import PlayerDialog from "../_components/PlayerDialog";
 import { VideoDataContext } from "app/_context/VideoDataContext";
+import { db } from "configs/db";
 
 // const scriptdata = " In a room bathed in moonlight, a little boy named Leo snuggled deep into his covers, ready for a story. His father opened a book of magical tales. 'Tonight,' he whispered, 'we'll meet a brave little dragon.' Deep in an enchanted forest, a tiny dragon named Sparky hatched from a shimmering egg. But Sparky was all alone and couldn't find his family. He let out a tiny, whimpering puff of smoke. Leo listened, his heart aching for the little dragon. 'He needs help,' he thought. Just then, a tiny light flickered in the darkness. It was a brave firefly named Flicker! 'This way!' buzzed Flicker, leading Sparky through the Whispering Woods. Flicker led him to a crystal cave, where Sparky’s family was waiting with open wings! With Sparky safe, Dad closed the book. Leo smiled, feeling warm and ready for sleep. And as he drifted off, he dreamed of soaring through the night sky with his new dragon friend. The End. "
 
@@ -30,15 +31,16 @@ const CreateNew = () => {
   const [audioFileUrl, setAudioFileUrl] = useState();
   const [captions, setCaptions] = useState();
   const [imageList, setImageList] = useState();
-  const [playVideo, setPlayVideo] = useState(true)
-  const [videoId, setVideoId] = useState(1)
-
+  const [playVideo, setPlayVideo] = useState(false);
+  const [videoId, setVideoId] = useState();
 
   const { videoData, setVideoData } = useContext(VideoDataContext);
   const { user } = useUser();
 
   const onhandleInputChange = (fieldName, fieldValue) => {
-    console.log(fieldName, fieldValue);
+    console.log("fieldName, fieldValue", fieldName, fieldValue);
+    // console.log("DRIZZLE_DATABASE_URL:", process.env.NEXT_PUBLIC_DRIZZLE_DATABASE_URL);
+
     setFormData((prev) => ({
       ...prev,
       [fieldName]: fieldValue,
@@ -64,12 +66,12 @@ const CreateNew = () => {
       formData.imageStyle +
       " format for each scene and give me the result in JSON format with ImagePrompt and ContextField as field. No Plain Text. Do not include a title, duration, or any other fields.Do not add explanations before or after the JSON. Return only the JSON array.Respond ONLY with valid JSON, no markdown, no code blocks, no extra commentary. ";
 
-    console.log(prompt);
+    console.log("prompt", prompt);
 
     const resp = await axios.post("/api/get-video-script", {
       prompt: prompt,
     });
-    console.log("resp.data", resp.data.result);
+    console.log("resp.data.result", resp.data.result);
     console.log("TYPE:", typeof resp.data.result);
     console.log("IS ARRAY:", Array.isArray(resp.data.result));
 
@@ -79,10 +81,12 @@ const CreateNew = () => {
         "videoScript": resp.data.result,
       }));
       setVideoScript(resp.data.result);
-      GenerateAudioFile(resp.data.result);
-      await GenerateAudioFile(resp.data.result);
+      // GenerateAudioFile(resp.data.result);
+      resp.data.result && (await GenerateAudioFile(resp.data.result));
+      console.log("videoScriptData Generate Image:", resp.data.result);
+      resp.data.result && (await GenerateImage(resp.data.result));
     }
-    // setLoading(false);
+    setLoading(false);
   };
   // get audio file
   const GenerateAudioFile = async (videoScriptData) => {
@@ -94,50 +98,54 @@ const CreateNew = () => {
       script = script + item.ContextField + " ";
     });
 
-    console.log("videoScriptData", script);
+    console.log("videoScriptData:", script);
 
     const resp = await axios.post("/api/generate-audio", {
-      text: videoScriptData,
+      text: script,
       id: id,
     });
+    console.log("GenerateAudioFile", resp.data);
+
     setVideoData((prev) => ({
       ...prev,
       "audioFileUrl": resp.data.result,
     }));
-    console.log("GenerateAudioFile", resp.data);
-    setAudioFileUrl(resp.data.result);
-    resp.data.result && GenerateAudioCaption(resp.data.result, videoScriptData);
+    setAudioFileUrl(resp.data.result); //Get File URL
+    resp.data.result && (await GenerateAudioCaption(resp.data.result, script));
 
-    setLoading(false);
+    // setLoading(false);
   };
 
   //  get caption file
   const GenerateAudioCaption = async (fileUrl, videoScriptData) => {
     // setLoading(true);
+    console.log("fileUrl", fileUrl);
 
     const resp = await axios.post("/api/generate-caption", {
       audioFileUrl: fileUrl,
     });
+    setCaptions(resp?.data?.result);
     setVideoData((prev) => ({
       ...prev,
       "captions": resp.data.result,
     }));
     console.log("GenerateAudioCaption", resp.data.result);
-    setCaptions(resp?.data?.result);
-    resp.data.result && GenerateImage(videoScriptData);
+    // console.log("videoScriptData Generate Image Caption:",resp.data.result);
 
-    setLoading(false);
+    // setLoading(false);
   };
 
   // get AI image
   const GenerateImage = async (videoScriptData) => {
+    // setLoading(true);
+
     let images = [];
     for (const element of videoScriptData) {
       try {
         const resp = await axios.post("/api/generate-image", {
           prompt: element.ImagePrompt,
         });
-        console.log(resp.data.result);
+        console.log("GenerateImage", resp.data.result);
         images.push(resp.data.result);
       } catch (e) {
         console.log("error generate image", e);
@@ -150,33 +158,35 @@ const CreateNew = () => {
 
     setImageList(images);
     setLoading(false);
+  };
 
-    useEffect(() => {
-      console.log(videoData);
-      if (Object.keys(videoData).length == 4) {
-        SaveVideoData(videoData);
-      }
-    }, [videoData]);
+  useEffect(() => {
+    console.log("videoData", videoData);
 
-    const SaveVideoData = async (videoData) => {
-      setLoading(true);
+    if (videoData && Object.keys(videoData).length === 4) {
+      SaveVideoData(videoData);
+    }
+  }, [videoData]);
 
-      const result = await db
-        .insert(VideoData)
-        .values({
-          script: VideoData?.videoScript,
-          audioFileUrl: VideoData?.audioFileUrl,
-          captions: videoData?.captions,
-          imageList: videoData?.imageList,
-          createdBy: User?.primaryEmailAddress.emailAddress,
-        }).returning({ id: VideoData?.id });
+  const SaveVideoData = async (videoData) => {
+    setLoading(true);
 
-        setVideoId(result[0].id);
-        setPlayVideo(true)
+    const result = await db
+      .insert(VideoData)
+      .values({
+        script: videoData?.videoScript,
+        audioFileUrl: videoData?.audioFileUrl,
+        captions: videoData?.captions,
+        imageList: videoData?.imageList,
+        createdBy: user?.primaryEmailAddress.emailAddress,
+      })
+      .returning({ id: VideoData?.id });
 
-      console.log("SaveVideoData", result);
-      setLoading(false);
-    };
+    setVideoId(result[0].id);
+    setPlayVideo(true);
+
+    console.log("SaveVideoData", result);
+    setLoading(false);
 
     // try {
     //   setLoading(true);

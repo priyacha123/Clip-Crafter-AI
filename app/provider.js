@@ -1,38 +1,36 @@
-'use client'
+"use client";
 
-import { useUser } from '@clerk/nextjs'
-import React, { useEffect } from 'react'
-import { Users } from '../configs/schema.js'
-import { eq } from 'drizzle-orm';
-import { db } from '../configs/db.js'
+import { useUser } from "@clerk/nextjs";
+import React, { useEffect } from "react";
+import { Users } from "../configs/schema.js";
+import { eq } from "drizzle-orm";
+import { db } from "../configs/db.js";
 
 const Provider = ({ children }) => {
-
   const { user } = useUser();
 
   useEffect(() => {
-    user&&isNewUser()
-  },[user]);
+    user && isNewUser();
+  }, [user]);
 
-  const isNewUser = async() => {
-    const result = await db.select().from(Users).where(eq(Users.email, user?.primaryEmailAddress?.emailAddress));
+  const isNewUser = async () => {
+    const result = await db
+      .select()
+      .from(Users)
+      .where(eq(Users.email, user?.primaryEmailAddress?.emailAddress));
 
-    console.log(result);
+    console.log("User", result);
 
-    if(!result[0]) {
+    if (!result[0]) {
       await db.insert(Users).values({
         name: user.fullName,
         email: user?.primaryEmailAddress?.emailAddress,
-        imageURL: user?.imageUrl
-      })
+        imageURL: user?.imageUrl,
+      });
     }
-  }
+  };
 
-  return (
-    <div>
-        {children}
-    </div>
-  )
-}
+  return <div>{children}</div>;
+};
 
-export default Provider
+export default Provider;

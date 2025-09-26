@@ -4,7 +4,7 @@ import { AbsoluteFill, Audio, Img, interpolate, Sequence, useCurrentFrame, useVi
 const RemotionVideo = ({
   script,
   imageList,
-  audioFileurl,
+  audioFileUrl,
   captions,
   setDurationInFrame,
 }) => {
@@ -22,10 +22,10 @@ const RemotionVideo = ({
     return currentCaption?currentCaption?.text:"";
   }
 
-  return (
+  return script && (
     <AbsoluteFill className="bg-black">
       {imageList?.map((item, index) => 
-      { const startTime = (index * getDurationFrame()) / imageList?.length 
+      { const startTime = (index * getDurationFrame()) / imageList?.length; 
         const duration = getDurationFrame()
         const scale = (index) => interpolate(
           frame,
@@ -38,7 +38,7 @@ const RemotionVideo = ({
           <Sequence
             key={index}
             from={startTime}
-            durationInFrames={getDurationFrame}
+            durationInFrames={getDurationFrame()}
           >
             <AbsoluteFill
               style={{ justifyContent: "center", alignItems: "center" }}
@@ -49,19 +49,19 @@ const RemotionVideo = ({
                   width: "100%",
                   height: "100%",
                   objectFit: "cover",
-                  transform:`scale ${scale(index)}`
+                  transform:`scale (${scale(index)})`
                 }}
               />
               <AbsoluteFill style={{
                 color:'white',
                 justifyContent:'center',
                 top:undefined,
-                bottom:50,
+                bottom:5,
                 height:150,
                 textAlign:'center',
                 width:'100%'
               }}>
-                <h2 className="text-2xl">
+                <h2 className="text-2xl bg-white font-bold text-black">
                   {getCurrentCaptions()}
                 </h2>
               </AbsoluteFill>
@@ -69,8 +69,10 @@ const RemotionVideo = ({
           </Sequence>
         </>
       )})}
+      
 
-      <Audio src={audioFileurl} />
+      <Audio src={audioFileUrl} />
+
     </AbsoluteFill>
   );
 };

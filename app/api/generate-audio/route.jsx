@@ -40,5 +40,5 @@ export async function POST(req) {
   console.log(downloadURL);
   
 
-  return NextResponse.json({ Result: downloadURL })
+  return NextResponse.json({ "result": downloadURL })
 }
