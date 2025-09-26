@@ -23,8 +23,12 @@ const PlayerDialog = ({ playVideo, videoId }) => {
   const router = useRouter();
 
   useEffect(() => {
-    setOpenDialog(!openDialog);
+  if (playVideo) {
+    setOpenDialog(true);
     videoId && GetVideoData();
+  } else {
+    setOpenDialog(false);
+  }
   }, [playVideo]);
 
   const GetVideoData = async () => {
@@ -45,7 +49,6 @@ const PlayerDialog = ({ playVideo, videoId }) => {
 
   return (
     <Dialog open={openDialog}>
-      {/* <DialogTrigger>Open</DialogTrigger> */}
       <DialogContent className="flex flex-col items-center">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold my-5">
@@ -77,7 +80,7 @@ const PlayerDialog = ({ playVideo, videoId }) => {
               </Button>
               <Button
                 onClick={() => {
-                  router.replace("/dashboard/create-new");
+                  router.replace("/dashboard");
                   setOpenDialog(false);
                 }}
               >

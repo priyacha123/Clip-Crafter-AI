@@ -7,12 +7,10 @@ const VideoList = ({ videoList }) => {
   const [openPlayDialog, setOpenPlayDialog] = useState(false);
   const [videoId, setVideoId] = useState();
   return (
-    <div
-      key={videoId}
-      className="mt-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-7"
-    >
+    <div className="mt-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-7">
       {videoList?.map((video, index) => (
         <div
+          key={index}
           className="cursor-pointer hover:scale-105 transition-all"
           onClick={() => {
             setOpenPlayDialog(Date.now());
@@ -20,7 +18,6 @@ const VideoList = ({ videoList }) => {
           }}
         >
           <Thumbnail
-            key={index}
             component={RemotionVideo}
             compositionWidth={250}
             compositionHeight={350}
@@ -34,6 +31,7 @@ const VideoList = ({ videoList }) => {
               ...video,
               setDurationInFrame: (v) => console.log(v),
             }}
+            // onClick={openPlayDialog}
           />
         </div>
       ))}
