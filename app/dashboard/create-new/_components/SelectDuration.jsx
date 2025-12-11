@@ -9,7 +9,7 @@ import {
 const SelectDuration = ( { onUserSelect }) => {
   return (
     <div className="p-10 flex flex-col gap-4">
-      <h2 className="font-bold text-xl text-black">Duration</h2>
+      <h2 className="font-bold text-xl text-black ">Duration</h2>
       <p className="text-gray-500"> Select the duration of your video</p>
       <Select onValueChange={(value) => {
       value!='Custome Prompt' && onUserSelect('duration', value)
