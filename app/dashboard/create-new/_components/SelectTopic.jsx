@@ -6,8 +6,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from"../../../../@/components/ui/select";
-import { Textarea } from "../../../../@/components/ui/textarea";
+} from"../../../../components/ui/select";
+import { Textarea } from "../../../../components/ui/textarea";
 import { useState } from "react";
 
 const SelectTopic = ( { onUserSelect }) => {

@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import SelectTopic from "./_components/SelectTopic";
 import SelectStyle from "./_components/SelectStyle";
 import SelectDuration from "./_components/SelectDuration";
-import { Button } from "../../../@/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import axios from "axios";
 import CustomeLoading from "./_components/CustomeLoading";
 import { v4 as uuidv4 } from "uuid";

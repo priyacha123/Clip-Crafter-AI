@@ -30,8 +30,8 @@ const SelectStyle = ({ onUserSelect }) => {
     },
   ];
   return (
-    <div className="p-10">
-      <h2 className="font-bold text-xl text-black">Style</h2>
+    <div className="pl-10">
+      <h2 className="font-bold text-3xl text-black dark:text-white mb-5">Style</h2>
       <p className="text-gray-500">Select your video style</p>
 
       <div>

@@ -6,10 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
   //   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "components/ui/dialog";
 import { Player } from "@remotion/player";
 import RemotionVideo from "./RemotionVideo";
-import { Button } from "@/components/ui/button";
+import { Button } from "components/ui/button";
 import { VideoData } from "configs/schema";
 import { useRouter } from "next/navigation";
 import { db } from "configs/db";
@@ -68,7 +68,7 @@ const PlayerDialog = ({ playVideo, videoId }) => {
                   setDurationInFrame(frameValue),
               }}
             />
-            <div className="flex justify-center gap-15 mt-3 items-center gap-4">
+            <div className="flex justify-center mt-3 items-center gap-4">
               <Button
                 // variant="ghost"
                 onClick={() => {

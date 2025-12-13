@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { EmptyState } from "./_components/EmptyState";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "components/ui/button";
 import { VideoData } from "configs/schema";
 import { useUser } from "@clerk/nextjs";
 import VideoList from "./_components/VideoList";
