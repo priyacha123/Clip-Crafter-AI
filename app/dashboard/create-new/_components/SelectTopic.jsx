@@ -16,7 +16,7 @@ const SelectTopic = ( { onUserSelect }) => {
 
   return (
     <div className="p-10 flex flex-col gap-4">
-      <h2 className="font-bold text-xl text-black">Content</h2>
+      <h2 className="font-bold text-3xl text-black dark:text-white">Content</h2>
       <p className="text-gray-500">What is the topic of your video?</p>
       <Select onValueChange={(value) => {
       setSelectedOption(value)

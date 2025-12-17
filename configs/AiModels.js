@@ -2,19 +2,27 @@
 // npm install @google/genai mime
 // npm install -D @types/node
 
-// import { GoogleGenAI } from '@google/genai';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+  GoogleGenAI,
+} from '@google/genai';
 
 async function main() {
-  const ai = new GoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY,
+  const ai = new GoogleGenAI({
+    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
   });
+  const tools = [
+    {
+      googleSearch: {
+      }
+    },
+  ];
   const config = {
     thinkingConfig: {
       thinkingBudget: -1,
     },
+    tools,
   };
-  const model = 'gemini-2.5-pro';
+  const model = 'gemini-2.5-flash';
   const contents = [
     {
       role: 'user',
