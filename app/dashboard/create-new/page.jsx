@@ -172,38 +172,62 @@ Return ONLY the JSON array and nothing else.
     }
     setLoading(false);
   };
-  // get audio file
-  const GenerateAudioFile = async (videoScriptData) => {
-    // setLoading(true);
-console.log("audio fine 1");
 
-    let script = "";
-    const id = uuidv4();
-    videoScriptData.forEach((item) => {
-      script = script + item.ContextField + " ";
-    });
-console.log("audio fine 2");
 
-    console.log("videoScriptData:", script);
+// get audio file
+const GenerateAudioFile = async (videoScriptData, voiceStyle = "Female") => {
+  console.log("audio step 1");
+  // Combine all ContextFields into a single script
+  const script = videoScriptData.map((item) => item.ContextField).join(" ");
+  const id = uuidv4();
+const BASE_URL='https://aigurulab.tech';
 
+
+  console.log("Final Script:", script);
+
+
+  // const result = await axios.post(BASE_URL+'/api/text-to-speech',
+  //       {
+  //           input: 'Sample Audio Text',
+  //           voice: 'am_michael'
+  //       },
+  //       {
+  //           headers: {
+  //               'x-api-key': apiKey, // Your API Key
+  //               'Content-Type': 'application/json', // Content Type
+  //           },
+  //       })
+  //    console.log(result.data.audio) //Output Result: Audio Mp3 Url
+
+  try {
     const resp = await axios.post("/api/generate-audio", {
       text: script,
-      id: id,
-      voiceStyle: formData.voiceStyle,
+      id: uuidv4(),
+      voiceStyle: "am_michael", // optional, maps to Speechify voice
     });
-    console.log("GenerateAudioFile", resp.data);
 
+    if (!resp.data.result) {
+      console.error("No audio URL returned");
+      return;
+    }
+    console.log("Audio URL:", resp.data.result);
+    // Update state with audio file URL
     setVideoData((prev) => ({
       ...prev,
-      "audioFileUrl": resp.data.result,
+      audioFileUrl: resp.data.result,
     }));
-    setAudioFileUrl(resp.data.result); //Get File URL
-    resp.data.result && (await GenerateAudioCaption(resp.data.result, script));
+    setAudioFileUrl(resp.data.result);
 
-console.log("audio fine 3");
+    // Generate captions if needed
+    await GenerateAudioCaption(resp.data.result, script);
 
-    // setLoading(false);
-  };
+    console.log("audio step 3");
+  } catch (err) {
+    console.error("Error generating audio:", err);
+  }
+};
+
+
 
   //  get caption file
   const GenerateAudioCaption = async (fileUrl, videoScriptData) => {
@@ -224,30 +248,36 @@ console.log("audio fine 3");
     // setLoading(false);
   };
 
-  // get AI image
-  const GenerateImage = async (videoScriptData) => {
-    // setLoading(true);
+// get AI image
+const GenerateImage = async (videoScriptData) => {
+  setLoading(true);
 
-    let images = [];
-    for (const element of videoScriptData) {
-      try {
-        const resp = await axios.post("/api/generate-image", {
-          prompt: element.ImagePrompt,
-        });
-        console.log("GenerateImage", resp.data.result);
-        images.push(resp.data.result);
-      } catch (e) {
-        console.log("error generate image", e);
-      }
+  let images = [];
+
+  for (const element of videoScriptData) {
+    try {
+      const resp = await axios.post("/api/generate-image", {
+        prompt: element.ImagePrompt,
+      });
+
+      // ✅ FIX HERE
+      console.log("GenerateImage", resp.data.image);
+
+      images.push(resp.data.image); // base64 image
+    } catch (e) {
+      console.log("error generate image", e);
     }
-    setVideoData((prev) => ({
-      ...prev,
-      "imageList": images,
-    }));
+  }
 
-    setImageList(images);
-    setLoading(false);
-  };
+  setVideoData((prev) => ({
+    ...prev,
+    imageList: images,
+  }));
+
+  setImageList(images);
+  setLoading(false);
+};
+
 
   useEffect(() => {
     console.log("videoData", videoData);

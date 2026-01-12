@@ -1,55 +1,114 @@
-import textToSpeech from "@google-cloud/text-to-speech";
-import { storage } from "configs/FirebaseConfig";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+// import { NextResponse } from "next/server";
+// import axios from "axios";
+// import { storage } from "configs/FirebaseConfig";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+// export async function POST(req) {
+//   try {
+//     const { text, id, voiceStyle } = await req.json();
+
+//     if (!text || !id) {
+//       return NextResponse.json(
+//         { error: "Missing text or id" },
+//         { status: 400 }
+//       );
+//     }
+
+//     // 🔹 Map your voiceStyle to Speechify voice IDs
+//     const voiceMap = {
+//       Female: "alloy",
+//       Male: "default",
+//       Robotic: "cyborg",
+//       Child: "luna",
+//       Narrator: "ryan",
+//     };
+//     const selectedVoice = voiceMap[voiceStyle] || "alloy";
+
+//     // 🔊 Generate speech using Speechify API
+//     const ttsResponse = await axios.post(
+//       "https://api.sws.speechify.com/v1/audio/speech",
+//       {
+//         input: text,
+//         voice_id: selectedVoice,
+//         audio_format: "mp3",
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.SPEECHIFY_API_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//         responseType: "arraybuffer", // Important for binary MP3
+//       }
+//     );
+
+//     // Convert response to buffer
+//     const audioBuffer = Buffer.from(ttsResponse.data);
+
+//     // 🔥 Upload MP3 to Firebase
+//     const storageRef = ref(storage, `ai-short-video-files/${id}.mp3`);
+//     await uploadBytes(storageRef, audioBuffer, { contentType: "audio/mpeg" });
+
+//     const downloadURL = await getDownloadURL(storageRef);
+
+//     return NextResponse.json({ result: downloadURL });
+//   } catch (error) {
+//     console.error("Audio generation error:", error);
+//     return NextResponse.json(
+//       { error: "TTS generation failed" },
+//       { status: 500 }
+//     );
+//   }
+// }
+ 
+
+// app/api/generate-audio/route.js (or route.jsx)
 import { NextResponse } from "next/server";
-// import fs from "fs";
-// import util from "util";
-
-const fs = require("fs");
-const util = require("util");
-
-const client = new textToSpeech.TextToSpeechClient({
-  apiKey: process.env.GOOGLE_API_KEY,
-});
+import axios from "axios";
 
 export async function POST(req) {
-  const { text, id, voiceStyle } = await req.json();
-  const storageRef = ref(storage, "ai-short-video-files/" + id + ".mp3");
+  try {
+    const { text, id, voiceStyle } = await req.json();
 
-  const voiceMap = {
-    Female: { ssmlGender: "FEMALE" },
-    MALE: { ssmlGender: "MALE" },
-    ROBOTIC: { ssmlGender: "NEUTRAL" },
-    CHILD: { name: "en-US-Wavenet-A" },
-    "DEEP VOICE": { name: "en-US-Wavenet-D" },
-    ANIMATED: { name: "en-US-Wavenet-C" },
-    NARRATOR: { name: "en-US-Wavenet-B" },
-  };
+    if (!text || !id) {
+      return NextResponse.json(
+        { error: "Missing text or id" },
+        { status: 400 }
+      );
+    }
 
-  const selectedVoice = voiceMap[voiceStyle] || { ssmlGender: "FEMALE" };
+    const BASE_URL = "https://aigurulab.tech";
+    const apiKey = process.env.AIGURU_API_KEY; // set in .env.local
 
-  const request = {
-    input: { text: text },
-    // Select the language and SSML voice gender (optional)
-    voice: { languageCode: "en-US", ...selectedVoice },
-    // select the type of audio encoding
-    audioConfig: { audioEncoding: "MP3" },
-  };
+    // 🔊 Call external TTS API
+    const ttsResponse = await axios.post(
+      `${BASE_URL}/api/text-to-speech`,
+      {
+        input: text,
+        voice: voiceStyle || "am_michael", // default voice
+      },
+      {
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  // Performs the text-to-speech request
-  const [response] = await client.synthesizeSpeech(request);
-  // Write the binary audio content to a local file
-  // const writeFile = util.promisify(fs.writeFile);
-  // await writeFile('output.mp3', response.audioContent, 'binary');
+    if (!ttsResponse.data || !ttsResponse.data.audio) {
+      console.error("TTS API did not return audio:", ttsResponse.data);
+      return NextResponse.json(
+        { error: "TTS generation failed" },
+        { status: 500 }
+      );
+    }
 
-  // store audio file in firebase storage
-  const audioBuffer = Buffer.from(response.audioContent, "binary");
-
-  await uploadBytes(storageRef, audioBuffer, { contentType: "audio/mp3" });
-  const downloadURL = await getDownloadURL(storageRef);
-  console.log("Audio content written to file: output.mp3");
-
-  console.log(downloadURL);
-
-  return NextResponse.json({ result: downloadURL });
+    // 🔥 Return the MP3 URL directly
+    return NextResponse.json({ result: ttsResponse.data.audio });
+  } catch (err) {
+    console.error("Audio generation error:", err.response || err);
+    return NextResponse.json(
+      { error: "TTS generation failed" },
+      { status: 500 }
+    );
+  }
 }
