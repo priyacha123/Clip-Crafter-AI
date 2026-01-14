@@ -11,7 +11,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.36.2",
+    "@clerk/nextjs": "^6.36.7",
     "@google-cloud/aiplatform": "^5.7.0",
     "@google-cloud/text-to-speech": "^6.3.0",
     "@google-cloud/vertexai": "^1.10.0",
@@ -42,8 +42,8 @@
     "openai": "^5.23.2",
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "remotion": "4.0.352",
     "replicate": "^1.2.0",
     "tailwind-merge": "^3.3.1",
