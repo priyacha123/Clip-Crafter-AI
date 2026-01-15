@@ -1,5 +1,4 @@
 import RemotionVideo from 'app/dashboard/_components/RemotionVideo'
-import React from 'react'
 import { Composition } from 'remotion'
 
 const RemotionRoot = () => {
