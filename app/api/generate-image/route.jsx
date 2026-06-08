@@ -44,16 +44,68 @@
 //   }
 // }
 
-
-
-// code without firebase
-
-
 import { NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.NEXT_PUBLIC_GEMINI_API_KEY
+);
+
+const getReferencePrompt = async (referenceImages) => {
+  if (!Array.isArray(referenceImages) || referenceImages.length === 0 || !genAI) {
+    return "";
+  }
+
+  const imageParts = referenceImages
+    .slice(0, 1)
+    .map((image) => {
+      if (!image?.dataUrl || typeof image.dataUrl !== "string") {
+        return null;
+      }
+
+      const matches = image.dataUrl.match(/^data:(.+);base64,(.+)$/);
+      if (!matches) {
+        return null;
+      }
+
+      const [, mimeType, data] = matches;
+      return {
+        inlineData: {
+          mimeType,
+          data,
+        },
+      };
+    })
+    .filter(Boolean);
+
+  if (imageParts.length === 0) {
+    return "";
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+  });
+
+  const result = await model.generateContent([
+    {
+      text: [
+        "Analyze these user reference images for AI scene generation.",
+        "Respond with a short single paragraph only.",
+        "Focus on reusable visual guidance: subject traits, wardrobe, colors, mood, composition, art style, and recurring details.",
+        "Do not mention camera metadata or speculate about hidden context.",
+      ].join(" "),
+    },
+    ...imageParts,
+  ]);
+
+  return result.response.text().trim();
+};
 
 export async function POST(req) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, referenceImages = [] } = await req.json();
 
     if (!prompt) {
       return NextResponse.json(
@@ -62,9 +114,14 @@ export async function POST(req) {
       );
     }
 
+    const referencePrompt = await getReferencePrompt(referenceImages);
+    const finalPrompt = referencePrompt
+      ? `${prompt}\n\nReference guidance from the user's uploaded images: ${referencePrompt}\n\nKeep the generated scene aligned with this reference guidance while still following the scene description.`
+      : prompt;
+
     // ---- Call Clipdrop ----
     const form = new FormData();
-    form.append("prompt", prompt);
+    form.append("prompt", finalPrompt);
 
     const response = await fetch("https://clipdrop-api.co/text-to-image/v1", {
       method: "POST",
@@ -92,6 +149,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       image: dataUrl,
+      promptUsed: finalPrompt,
     });
 
   } catch (e) {

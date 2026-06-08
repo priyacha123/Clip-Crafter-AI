@@ -1,5 +1,5 @@
-import RemotionVideo from 'app/dashboard/_components/RemotionVideo'
-import { Composition } from 'remotion'
+import RemotionVideo from "../app/dashboard/_components/RemotionVideo";
+import { Composition } from "remotion";
 
 const RemotionRoot = () => {
   return (
@@ -13,7 +13,7 @@ const RemotionRoot = () => {
         height={720}
       />
     </>
-  )
-}
+  );
+};
 
-export default RemotionRoot
+export default RemotionRoot;

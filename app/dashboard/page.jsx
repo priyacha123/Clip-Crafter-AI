@@ -4,31 +4,50 @@ import { useEffect, useState } from "react";
 import { EmptyState } from "./_components/EmptyState";
 import Link from "next/link";
 import { Button } from "components/ui/button";
-import { VideoData } from "configs/schema";
 import { useUser } from "@clerk/nextjs";
 import VideoList from "./_components/VideoList";
-import { db } from "configs/db";
-import { eq } from "drizzle-orm";
 
 export default function page() {
   const [videoList, setVideoList] = useState([]);
-
-  // used to get user video
-  const { user } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoaded } = useUser();
 
   useEffect(() => {
-    user && GetVideoList();
-  }, [user]);
+    if (!isLoaded) return;
 
-  const GetVideoList = async () => {
-    const result = await db
-      .select()
-      .from(VideoData)
-      .where(eq(VideoData?.createdBy, user?.primaryEmailAddress?.emailAddress));
+    if (!user?.primaryEmailAddress?.emailAddress) {
+      setVideoList([]);
+      setIsLoading(false);
+      return;
+    }
 
-    console.log("render result", result);
-    setVideoList(result);
+    GetVideoList(user.primaryEmailAddress.emailAddress);
+  }, [isLoaded, user]);
+
+  const GetVideoList = async (email) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `/api/videos?email=${encodeURIComponent(email)}`
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Failed to load videos", data);
+        setVideoList([]);
+        return;
+      }
+
+      console.log("render result", data.videos);
+      setVideoList(data.videos || []);
+    } catch (error) {
+      console.error("Failed to load videos", error);
+      setVideoList([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -39,14 +58,14 @@ export default function page() {
       </div>
 
       {/* Empty state */}
-      {videoList?.length == 0 && (
+      {!isLoading && videoList?.length == 0 && (
         <div>
           <EmptyState />
         </div>
       )}
 
       {/* List of Videos */}
-      <VideoList videoList={videoList} />
+      {!isLoading && <VideoList videoList={videoList} />}
     </div>
   );
 }

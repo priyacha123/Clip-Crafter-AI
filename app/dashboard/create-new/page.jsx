@@ -8,12 +8,11 @@ import { Button } from "../../../components/ui/button";
 import axios from "axios";
 import CustomeLoading from "./_components/CustomeLoading";
 import { v4 as uuidv4 } from "uuid";
-import { VideoData } from "configs/schema";
 import { useUser } from "@clerk/nextjs";
 import PlayerDialog from "../_components/PlayerDialog";
 import { VideoDataContext } from "app/_context/VideoDataContext";
-import { db } from "configs/db";
 import SelectVoice from "./_components/SelectVoice";
+import ImageReferenceUpload from "./_components/ImageReferenceUpload";
 
 // const scriptdata = " In a room bathed in moonlight, a little boy named Leo snuggled deep into his covers, ready for a story. His father opened a book of magical tales. 'Tonight,' he whispered, 'we'll meet a brave little dragon.' Deep in an enchanted forest, a tiny dragon named Sparky hatched from a shimmering egg. But Sparky was all alone and couldn't find his family. He let out a tiny, whimpering puff of smoke. Leo listened, his heart aching for the little dragon. 'He needs help,' he thought. Just then, a tiny light flickered in the darkness. It was a brave firefly named Flicker! 'This way!' buzzed Flicker, leading Sparky through the Whispering Woods. Flicker led him to a crystal cave, where Sparky’s family was waiting with open wings! With Sparky safe, Dad closed the book. Leo smiled, feeling warm and ready for sleep. And as he drifted off, he dreamed of soaring through the night sky with his new dragon friend. The End. "
 
@@ -83,6 +82,7 @@ const CreateNew = () => {
   const [imageList, setImageList] = useState();
   const [playVideo, setPlayVideo] = useState(false);
   const [videoId, setVideoId] = useState();
+  const [referenceImages, setReferenceImages] = useState([]);
 
   const { videoData, setVideoData } = useContext(VideoDataContext);
   const { user } = useUser();
@@ -258,6 +258,7 @@ const GenerateImage = async (videoScriptData) => {
     try {
       const resp = await axios.post("/api/generate-image", {
         prompt: element.ImagePrompt,
+        referenceImages,
       });
 
       // ✅ FIX HERE
@@ -282,57 +283,43 @@ const GenerateImage = async (videoScriptData) => {
   useEffect(() => {
     console.log("videoData", videoData);
 
-    if (videoData && Object.keys(videoData).length === 4) {
+    if (
+      videoData &&
+      Object.keys(videoData).length === 4 &&
+      user?.primaryEmailAddress?.emailAddress
+    ) {
       SaveVideoData(videoData);
     }
-  }, [videoData]);
+  }, [videoData, user]);
 
   const SaveVideoData = async (videoData) => {
     setLoading(true);
+    const email = user?.primaryEmailAddress?.emailAddress;
 
-    const result = await db
-      .insert(VideoData)
-      .values({
+    if (!email) {
+      console.error("Cannot save video without a signed-in user email.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post("/api/videos", {
         script: videoData?.videoScript,
         audioFileUrl: videoData?.audioFileUrl,
         captions: videoData?.captions,
         imageList: videoData?.imageList,
-        createdBy: user?.primaryEmailAddress.emailAddress,
-      })
-      .returning({ id: VideoData?.id });
+        createdBy: email,
+      });
 
-    setVideoId(result[0].id);
-    setPlayVideo(true);
+      setVideoId(response.data.id);
+      setPlayVideo(true);
 
-    console.log("SaveVideoData", result);
-    setLoading(false);
-
-    // try {
-    //   setLoading(true);
-
-    //   const images = await Promise.all(
-    //     videoScriptData.map(async (element) => {
-    //       try {
-    //         const response = await axios.post("/api/generate-image", {
-    //           prompt: element.ImagePrompt,
-    //         });
-    //         return response.data.result; // this is a base64 image
-    //       } catch (err) {
-    //         console.error(" Error generating image:", err.message);
-    //         return null;
-    //       }
-    //     })
-    //   );
-    // setVideoData((prev) => ({
-    //   ...prev,
-    //   "imageList": resp.data.result,
-    // }));
-
-    //   setImageList(images.filter(Boolean));
-    //   console.log("All Files:", images, videoScript, audioFileUrl, captions);
-    // } finally {
-    //   setLoading(false);
-    // }
+      console.log("SaveVideoData", response.data);
+    } catch (error) {
+      console.error("Failed to save video", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -348,6 +335,10 @@ const GenerateImage = async (videoScriptData) => {
         <SelectStyle onUserSelect={onhandleInputChange} />
         <SelectVoice onUserSelect={onhandleInputChange} />
         <SelectDuration onUserSelect={onhandleInputChange} />
+        <ImageReferenceUpload
+          value={referenceImages}
+          onChange={setReferenceImages}
+        />
 
 
         <div className="m-10 p-10 mt-0 pt-0 flex justify-center items-center">
