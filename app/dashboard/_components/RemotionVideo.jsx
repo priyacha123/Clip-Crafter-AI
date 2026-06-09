@@ -7,9 +7,12 @@ import {
   Img,
   interpolate,
   Sequence,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+
+const DEFAULT_COVER_IMAGE = staticFile("default_cover.jpg");
 
 const RemotionVideo = ({
   script,
@@ -53,7 +56,7 @@ const RemotionVideo = ({
 
   // Use the cover image as fallback when no images exist
   const images =
-    safeImageList.length > 0 ? safeImageList : ["/default_cover.jpg"];
+    safeImageList.length > 0 ? safeImageList : [DEFAULT_COVER_IMAGE];
 
   const totalDuration = useMemo(() => {
     if (safeCaptions.length === 0) return 100;

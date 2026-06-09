@@ -51,7 +51,7 @@ export async function POST(req) {
     const downloadUrl = `/renders/${outputFileName}`;
 
     if (fs.existsSync(outputPath)) {
-      fs.unlinkSync(outputPath);
+      return NextResponse.json({ success: true, downloadUrl });
     }
 
     const captions = parseJsonArray(video.captions);

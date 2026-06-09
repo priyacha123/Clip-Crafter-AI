@@ -45,14 +45,11 @@ export default function page() {
 
   const GetVideoList = async (email) => {
     setIsLoading(true);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     try {
       setFetchError("");
       const response = await fetch(
-        `/api/videos?email=${encodeURIComponent(email)}&summary=1`,
-        { signal: controller.signal }
+        `/api/videos?email=${encodeURIComponent(email)}&summary=1`
       );
       const data = await response.json();
 
@@ -68,13 +65,8 @@ export default function page() {
     } catch (error) {
       console.error("Failed to load videos", error);
       setVideoList([]);
-      setFetchError(
-        error?.name === "AbortError"
-          ? "Loading your videos took too long. Please try again."
-          : "Could not reach the video API."
-      );
+      setFetchError("Could not reach the video API.");
     } finally {
-      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
