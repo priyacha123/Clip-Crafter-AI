@@ -5,11 +5,20 @@
 import { useUser } from "@clerk/nextjs";
 import React, { useEffect } from "react";
 
+const USER_EMAIL_STORAGE_KEY = "clipcrafter:userEmail";
+
 const Provider = ({ children }) => {
   const { user } = useUser();
 
   useEffect(() => {
-    user && isNewUser();
+    if (!user?.primaryEmailAddress?.emailAddress) return;
+
+    localStorage.setItem(
+      USER_EMAIL_STORAGE_KEY,
+      user.primaryEmailAddress.emailAddress.toLowerCase()
+    );
+
+    isNewUser();
   }, [user]);
 
   const isNewUser = async () => {

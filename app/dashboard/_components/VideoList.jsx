@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { Thumbnail } from "@remotion/player";
-import RemotionVideo from "./RemotionVideo";
 import PlayerDialog from "./PlayerDialog";
 
 const VideoList = ({ videoList }) => {
@@ -11,28 +9,27 @@ const VideoList = ({ videoList }) => {
       {videoList?.map((video, index) => (
         <div
           key={index}
-          className="cursor-pointer hover:scale-105 transition-all"
+          className="cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:scale-105 dark:bg-black"
           onClick={() => {
             setOpenPlayDialog(Date.now());
             setVideoId(video?.id);
           }}
         >
-          <Thumbnail
-            component={RemotionVideo}
-            compositionWidth={250}
-            compositionHeight={350}
-            frameToDisplay={30}
-            durationInFrames={120}
-            fps={30}
-            style={{
-              borderRadius: 15,
-            }}
-            inputProps={{
-              ...video,
-              setDurationInFrame: (v) => console.log(v),
-            }}
-            // onClick={openPlayDialog}
+          <img
+            src="/default_cover.jpg"
+            alt="Video cover"
+            className="h-[350px] w-full object-cover"
           />
+          <div className="p-3">
+            <p className="line-clamp-2 text-sm font-semibold">
+              Generated short video
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {video?.createdAt
+                ? new Date(video.createdAt).toLocaleString()
+                : "Recently created"}
+            </p>
+          </div>
         </div>
       ))}
       <PlayerDialog playVideo={openPlayDialog} videoId={videoId} />

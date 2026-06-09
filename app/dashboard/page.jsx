@@ -7,34 +7,59 @@ import { Button } from "components/ui/button";
 import { useUser } from "@clerk/nextjs";
 import VideoList from "./_components/VideoList";
 
+const USER_EMAIL_STORAGE_KEY = "clipcrafter:userEmail";
+
 export default function page() {
   const [videoList, setVideoList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [storedEmail, setStoredEmail] = useState(null);
+  const [fetchError, setFetchError] = useState("");
+
   const { user, isLoaded } = useUser();
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (typeof window === "undefined") return;
 
-    if (!user?.primaryEmailAddress?.emailAddress) {
+    setStoredEmail(localStorage.getItem(USER_EMAIL_STORAGE_KEY) || "");
+  }, []);
+
+  useEffect(() => {
+    if (storedEmail === null) return;
+
+    const resolvedEmail =
+      user?.primaryEmailAddress?.emailAddress || storedEmail || "";
+
+    if (!resolvedEmail) {
       setVideoList([]);
+      setFetchError("We could not resolve your signed-in email yet.");
       setIsLoading(false);
       return;
     }
 
-    GetVideoList(user.primaryEmailAddress.emailAddress);
-  }, [isLoaded, user]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(USER_EMAIL_STORAGE_KEY, resolvedEmail);
+    }
+
+    GetVideoList(resolvedEmail);
+  }, [isLoaded, storedEmail, user]);
 
   const GetVideoList = async (email) => {
     setIsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
     try {
+      setFetchError("");
       const response = await fetch(
-        `/api/videos?email=${encodeURIComponent(email)}`
+        `/api/videos?email=${encodeURIComponent(email)}&summary=1`,
+        { signal: controller.signal }
       );
       const data = await response.json();
 
       if (!response.ok) {
         console.error("Failed to load videos", data);
         setVideoList([]);
+        setFetchError(data.error || "Failed to load your videos.");
         return;
       }
 
@@ -43,7 +68,13 @@ export default function page() {
     } catch (error) {
       console.error("Failed to load videos", error);
       setVideoList([]);
+      setFetchError(
+        error?.name === "AbortError"
+          ? "Loading your videos took too long. Please try again."
+          : "Could not reach the video API."
+      );
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
@@ -56,6 +87,18 @@ export default function page() {
           <Button>Create New</Button>
         </Link>
       </div>
+
+      {isLoading ? (
+        <div className="mt-10 rounded-lg border p-6 text-sm text-muted-foreground">
+          Loading your videos...
+        </div>
+      ) : null}
+
+      {!isLoading && fetchError ? (
+        <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900">
+          {fetchError}
+        </div>
+      ) : null}
 
       {/* Empty state */}
       {!isLoading && videoList?.length == 0 && (

@@ -51,7 +51,7 @@ export async function POST(req) {
     const downloadUrl = `/renders/${outputFileName}`;
 
     if (fs.existsSync(outputPath)) {
-      return NextResponse.json({ success: true, downloadUrl });
+      fs.unlinkSync(outputPath);
     }
 
     const captions = parseJsonArray(video.captions);
@@ -72,12 +72,6 @@ export async function POST(req) {
       )
     );
 
-    let duration = 120;
-    const lastCaption = captions[captions.length - 1];
-    if (lastCaption?.end) {
-      duration = Math.max(1, Math.ceil((lastCaption.end / 1000) * 30));
-    }
-
     const remotionEntry = path.join(
       process.cwd(),
       "remotion-composition",
@@ -90,9 +84,6 @@ export async function POST(req) {
       "Empty",
       outputPath,
       `--props=${tempJsonPath}`,
-      "--width=1080",
-      "--height=1920",
-      `--duration=${duration}`,
     ];
 
     const command = process.platform === "win32" ? "cmd.exe" : "npx";

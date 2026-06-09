@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "configs/db";
 import { VideoData } from "configs/schema";
-import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 export async function GET(req) {
   try {
@@ -13,34 +13,35 @@ export async function GET(req) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const summaryOnly = searchParams.get("summary") === "1";
+
+    if (summaryOnly) {
+      const videos = await db
+        .select({
+          id: VideoData.id,
+          createdAt: VideoData.createdAt,
+        })
+        .from(VideoData)
+        .where(eq(VideoData.createdBy, normalizedEmail))
+        .orderBy(desc(VideoData.createdAt));
+
+      return NextResponse.json({
+        success: true,
+        videos,
+        legacyFallbackUsed: false,
+      });
+    }
 
     const videos = await db
       .select()
       .from(VideoData)
-      .where(
-        and(
-          sql`lower(${VideoData.createdBy}) = ${normalizedEmail}`,
-          sql`${VideoData.createdBy} is not null`
-        )
-      )
-      .orderBy(desc(VideoData.createdAt));
-
-    if (videos.length > 0) {
-      return NextResponse.json({ success: true, videos, legacyFallbackUsed: false });
-    }
-
-    const legacyVideos = await db
-      .select()
-      .from(VideoData)
-      .where(
-        or(isNull(VideoData.createdBy), eq(VideoData.createdBy, ""))
-      )
+      .where(eq(VideoData.createdBy, normalizedEmail))
       .orderBy(desc(VideoData.createdAt));
 
     return NextResponse.json({
       success: true,
-      videos: legacyVideos,
-      legacyFallbackUsed: true,
+      videos,
+      legacyFallbackUsed: false,
     });
   } catch (err) {
     console.error("Failed to load videos:", err);

@@ -14,6 +14,8 @@ import { VideoDataContext } from "app/_context/VideoDataContext";
 import SelectVoice from "./_components/SelectVoice";
 import ImageReferenceUpload from "./_components/ImageReferenceUpload";
 
+const USER_EMAIL_STORAGE_KEY = "clipcrafter:userEmail";
+
 // const scriptdata = " In a room bathed in moonlight, a little boy named Leo snuggled deep into his covers, ready for a story. His father opened a book of magical tales. 'Tonight,' he whispered, 'we'll meet a brave little dragon.' Deep in an enchanted forest, a tiny dragon named Sparky hatched from a shimmering egg. But Sparky was all alone and couldn't find his family. He let out a tiny, whimpering puff of smoke. Leo listened, his heart aching for the little dragon. 'He needs help,' he thought. Just then, a tiny light flickered in the darkness. It was a brave firefly named Flicker! 'This way!' buzzed Flicker, leading Sparky through the Whispering Woods. Flicker led him to a crystal cave, where Sparky’s family was waiting with open wings! With Sparky safe, Dad closed the book. Leo smiled, feeling warm and ready for sleep. And as he drifted off, he dreamed of soaring through the night sky with his new dragon friend. The End. "
 
 // const FILEURL='https://firebasestorage.googleapis.com/v0/b/intense-howl-472504-b2.firebasestorage.app/o/ai-short-video-files%2Fe99ce48d-eee7-46bd-b156-3563c2e1625a.mp3?alt=media&token=bcb1889d-e6a0-41f5-ab8f-20f895eb09a7'
@@ -303,6 +305,10 @@ const GenerateImage = async (videoScriptData) => {
     }
 
     try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(USER_EMAIL_STORAGE_KEY, email.toLowerCase());
+      }
+
       const response = await axios.post("/api/videos", {
         script: videoData?.videoScript,
         audioFileUrl: videoData?.audioFileUrl,
