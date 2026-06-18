@@ -86,6 +86,27 @@ const PlayerDialog = ({ playVideo, videoId }) => {
     }
   };
 
+  const coverImage = (() => {
+    const rawImageList = videoData?.imageList;
+
+    if (Array.isArray(rawImageList) && rawImageList[0]) {
+      return rawImageList[0];
+    }
+
+    if (typeof rawImageList === "string") {
+      try {
+        const parsed = JSON.parse(rawImageList);
+        if (Array.isArray(parsed) && parsed[0]) {
+          return parsed[0];
+        }
+      } catch {
+        // Fall back to the default cover image below.
+      }
+    }
+
+    return "/default_cover.jpg";
+  })();
+
   return (
     <Dialog
       open={openDialog}
@@ -109,11 +130,7 @@ const PlayerDialog = ({ playVideo, videoId }) => {
               showPosterWhenUnplayed={true}
               renderPoster={() => (
                 <img
-                  src={
-                    (Array.isArray(videoData?.imageList) &&
-                      videoData.imageList[0]) ||
-                    "/default_cover.jpg"
-                  }
+                  src={coverImage}
                   style={{
                     width: "100%",
                     height: "100%",

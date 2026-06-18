@@ -20,6 +20,7 @@ export async function GET(req) {
         .select({
           id: VideoData.id,
           createdAt: VideoData.createdAt,
+          imageList: VideoData.imageList,
         })
         .from(VideoData)
         .where(eq(VideoData.createdBy, normalizedEmail))

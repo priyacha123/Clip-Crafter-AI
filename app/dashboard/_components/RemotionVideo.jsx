@@ -54,9 +54,8 @@ const RemotionVideo = ({
     return [];
   }, [imageList]);
 
-  // Use the cover image as fallback when no images exist
-  const images =
-    safeImageList.length > 0 ? safeImageList : [DEFAULT_COVER_IMAGE];
+  const coverImage = safeImageList[0] || DEFAULT_COVER_IMAGE;
+  const images = safeImageList.length > 0 ? safeImageList : [coverImage];
 
   const totalDuration = useMemo(() => {
     if (safeCaptions.length === 0) return 100;

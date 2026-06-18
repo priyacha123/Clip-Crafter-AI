@@ -5,6 +5,25 @@ const VideoList = ({ videoList }) => {
   const [openPlayDialog, setOpenPlayDialog] = useState(false);
   const [videoId, setVideoId] = useState();
 
+  const getCoverImage = (imageList) => {
+    if (Array.isArray(imageList) && imageList[0]) {
+      return imageList[0];
+    }
+
+    if (typeof imageList === "string") {
+      try {
+        const parsed = JSON.parse(imageList);
+        if (Array.isArray(parsed) && parsed[0]) {
+          return parsed[0];
+        }
+      } catch {
+        // Fall through to the default cover below.
+      }
+    }
+
+    return "/default_cover.jpg";
+  };
+
   return (
     <div className="mt-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-7">
       {videoList?.map((video, index) => (
@@ -17,7 +36,7 @@ const VideoList = ({ videoList }) => {
           }}
         >
           <img
-            src="/default_cover.jpg"
+            src={getCoverImage(video?.imageList)}
             alt="Video cover"
             className="h-[350px] w-full object-cover"
           />

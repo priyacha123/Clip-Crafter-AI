@@ -109,6 +109,19 @@ const CreateNew = () => {
   // get video script
   const GetVideoScript = async () => {
     setLoading(true);
+    const topicPrompt = formData?.topic?.trim();
+    const missingFields = [];
+
+    if (!topicPrompt) missingFields.push("content");
+    if (!formData?.imageStyle) missingFields.push("style");
+    if (!formData?.voiceStyle) missingFields.push("voice");
+    if (!formData?.duration) missingFields.push("duration");
+
+    if (missingFields.length > 0) {
+      alert(`Please select: ${missingFields.join(", ")}.`);
+      setLoading(false);
+      return;
+    }
     // const prompt =
       // "Write a script to generate " +
       // formData.duration +
@@ -123,7 +136,7 @@ const CreateNew = () => {
     const prompt = `
 You are an API that returns ONLY valid JSON.
 
-Generate a script for a ${formData.duration} video on the topic "${formData.topic}"
+Generate a script for a ${formData.duration} video on the topic "${topicPrompt}"
 using a ${formData.voiceStyle} narration style.
 
 Return the response as a JSON ARRAY only.
@@ -149,30 +162,33 @@ Return ONLY the JSON array and nothing else.
 
     console.log("prompt", prompt);
 
-    const resp = await axios.post("/api/get-video-script", {
-      prompt: prompt,
-    });
-    console.log("resp.data.result", resp.data.result);
-    console.log("TYPE:", typeof resp.data.result);
-    console.log("IS ARRAY:", Array.isArray(resp.data.result));
+    try {
+      const resp = await axios.post("/api/get-video-script", {
+        prompt,
+      });
+      console.log("resp.data.result", resp.data.result);
+      console.log("TYPE:", typeof resp.data.result);
+      console.log("IS ARRAY:", Array.isArray(resp.data.result));
 
-    if (resp.data.result) {
-    // if (VIDEOSCRIPT) {
-      setVideoData((prev) => ({
-        ...prev,
-        "videoScript": resp.data.result,
-        // "videoScript": VIDEOSCRIPT,
-      }));
-      setVideoScript(resp.data.result);
-      // setVideoScript(VIDEOSCRIPT);
-      // GenerateAudioFile(resp.data.result);
-      resp.data.result && (await GenerateAudioFile(resp.data.result));
-      // VIDEOSCRIPT && (await GenerateAudioFile(VIDEOSCRIPT));
-      console.log("videoScriptData Generate Image:", resp.data.result);
-      resp.data.result && (await GenerateImage(resp.data.result));
-      // VIDEOSCRIPT && (await GenerateImage(VIDEOSCRIPT));
+      if (resp.data.result) {
+        setVideoData((prev) => ({
+          ...prev,
+          videoScript: resp.data.result,
+        }));
+        setVideoScript(resp.data.result);
+        await GenerateAudioFile(resp.data.result);
+        console.log("videoScriptData Generate Image:", resp.data.result);
+        await GenerateImage(resp.data.result);
+      }
+    } catch (error) {
+      console.error("Failed to generate video script:", error);
+      const errorMessage =
+        error?.response?.data?.error ||
+        "Video script generation failed. Please try again.";
+      alert(errorMessage);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
 

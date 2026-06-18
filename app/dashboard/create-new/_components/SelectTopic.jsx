@@ -35,7 +35,7 @@ const SelectTopic = ( { onUserSelect }) => {
       {selectedOption == 'Custome Prompt' &&
       <Textarea 
       className="mt-3" 
-      onChange={(e) => onUserSelect(e.target.value)}
+      onChange={(e) => onUserSelect('topic', e.target.value)}
       placeholder='Write promt in which you want to generate video'
       />
       }
